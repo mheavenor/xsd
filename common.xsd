@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="https://geocortex.com/layout/v1"
+    targetNamespace="https://geocortex.com/layout/v1"
+    elementFormDefault="qualified"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <element name="layout">
+    <complexType>
+      <sequence>
+        <element ref="tns:component" minOccurs="0" maxOccurs="unbounded"/>
+      </sequence>
+    </complexType>
+  </element>
+
+  <complexType name="ComponentWithChildren" abstract="true">
+    <complexContent mixed="true">
+      <extension base="tns:Component">
+        <choice>
+          <element ref="tns:component" minOccurs="0" maxOccurs="unbounded"/>
+        </choice>
+      </extension>
+    </complexContent>
+  </complexType>
+
+  <element name="component" type="tns:Component" abstract="true"/>
+
+  <complexType name="Component" abstract="true">
+    <annotation>
+      <documentation xml:lang="en">
+        A visual element of an application's UI, e.g. a button, a map, a
+        a dialog box, a panel, etc.
+      </documentation>
+    </annotation>
+    <sequence/>
+    <attribute name="id" type="ID">
+      <annotation>
+        <documentation xml:lang="en">
+          A unique ID for the component.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="title" type="string">
+      <annotation>
+        <documentation xml:lang="en">
+          A human-readable title for the component. Where the title
+          appears (or whether it appears at all) varies with each type
+          of component.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="icon" type="string">
+      <annotation>
+        <documentation xml:lang="en">
+          A resource key that can be mapped to an image for the icon.
+          Where the icon appears (or whether it appears at all) varies
+          with each type of component.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="config" type="string">
+      <annotation>
+        <documentation xml:lang="en">
+          The ID of a corresponding item in a Geocortex App that
+          contains this component's configuration and state.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="width">
+      <annotation>
+        <documentation xml:lang="en">
+          The width of the component, in em units.
+        </documentation>
+      </annotation>
+      <simpleType>
+        <restriction base="double">
+          <minInclusive value="0" />
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="height">
+      <annotation>
+        <documentation xml:lang="en">
+          The height of the component, in em units.
+        </documentation>
+      </annotation>
+      <simpleType>
+        <restriction base="double">
+          <minInclusive value="0" />
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="margin" type="double">
+      <annotation>
+        <documentation xml:lang="en">
+          The margin around the component, in em units.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="padding" type="double">
+      <annotation>
+        <documentation xml:lang="en">
+          The padding within the component, in em units.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="halign" default="start">
+      <annotation>
+        <documentation xml:lang="en">
+          Describes how the content of a component is horizontally
+          aligned. For stacks and splits, the content is the child
+          components. For a component like text, the content is the
+          text itself.
+        </documentation>
+      </annotation>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="start"/>
+          <enumeration value="center"/>
+          <enumeration value="end"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="valign" default="start">
+      <annotation>
+        <documentation xml:lang="en">
+          Describes how the content of a component is vertically
+          aligned. For stacks and splits, the content is the child
+          components. For a component like text, the content is the
+          text itself.
+        </documentation>
+      </annotation>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="start"/>
+          <enumeration value="center"/>
+          <enumeration value="end"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="grow" default="0">
+      <annotation>
+        <documentation xml:lang="en">
+          Sets whether or not a component's width or height will grow
+          over its parents primary axis. Components with a grow of 0
+          will fill to their natural or requested width/height.
+          Components with a specified grow will fill up a percentage
+          of the remaining space equal to their grow value divided by
+          the total grow of all sibling components (including the
+          component in question).
+        </documentation>
+      </annotation>
+      <simpleType>
+        <restriction base="double">
+          <minInclusive value="0" />
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="slot" type="string">
+      <annotation>
+        <documentation xml:lang="en">
+          When a component is nested inside of another component, it
+          may explicilty reference a named "slot" in the parent
+          component to indicate where the child should appear.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="active" type="boolean">
+      <annotation>
+        <documentation xml:lang="en">
+          Specifies whether a component is active by default or not. When this
+          attribute is not defined, the parent component decides the child's
+          behavior. In Web, an inactive component means that the component is
+          initially not visible. An active component means the component is
+          initially visible. In Mobile, inactive and active components are up to
+          the interpretation of the parent to decide on how to render.
+        </documentation>
+      </annotation>
+    </attribute>
+    <attribute name="models" type="string">
+      <annotation>
+        <documentation xml:lang="en">
+          Some components import the models of other components (for
+          example, a scalebar component might need access to a map
+          component's model). When these relationships cannot be
+          determined implicitly from the layout, then the layout
+          author can explicitly specify these dependencies via this
+          attribute. The value is a comma-separated list of CSS-style
+          selectors indiciating which components to import models
+          from. For example, "map,#primary-scene" would specify all
+          map components and a component with ID "primary-scene".
+        </documentation>
+      </annotation>
+    </attribute>
+  </complexType>
+
+  <!-- Basic Components -->
+
+  <element name="button" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A button that executes a command when clicked. The caption will be
+        the contained text, e.g. "Click Me!" in the case of
+        <![CDATA[<button>Click Me!</button>]]>.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:Component">
+          <attribute name="command" type="string">
+            <annotation>
+              <documentation xml:lang="en">
+                The name of the command to execute.
+              </documentation>
+            </annotation>
+          </attribute>
+          <attribute name="arguments" type="string">
+            <annotation>
+              <documentation xml:lang="en">
+                The arguments for the command (optional).
+              </documentation>
+            </annotation>
+          </attribute>
+        </extension>
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="iwtm" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        An "I Want To..." menu (the actual title can be specified via the
+        "title" attribute). Has a single slot called "top", used to house
+        the user component, for example.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:ComponentWithChildren" />
+      </complexContent>
+    </complexType>
+  </element>  
+
+  <element name="split" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A container for other components that organizes its children
+        horizontally.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:Component">
+          <choice>
+            <element ref="tns:component" minOccurs="0" maxOccurs="unbounded"/>
+          </choice>
+          <attribute name="resizable" type="boolean" default="false">
+            <annotation>
+              <documentation xml:lang="en">
+                Whether the user can interactively resize the
+                contained components. Not supported on all
+                platforms.
+              </documentation>
+            </annotation>
+          </attribute>
+        </extension>
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="stack" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A container for other components that organizes its children
+        vertically.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:Component">
+          <choice>
+            <element ref="tns:component" minOccurs="0" maxOccurs="unbounded"/>
+          </choice>
+          <attribute name="resizable" type="boolean" default="false">
+            <annotation>
+              <documentation xml:lang="en">
+                Whether the user can interactively resize the
+                contained components. Not supported on all
+                platforms.
+              </documentation>
+            </annotation>
+          </attribute>
+        </extension>
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="panel" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A container that enables hierarchical navigation between its
+        child components. The user can navigate backwards to
+        components that were activated prior to the currently active
+        component and are ordered above the current component in
+        configuration. The last component that is marked as active
+        will be initially displayed, with all other components
+        configured above that last component as active being
+        accessible via navigating backwards.
+        For example, if a panel has child components A, B, and C
+        (configured in that order), and initially A is active, then
+        activating C would display the C component but allow the user
+        to navigate back to A. If the user then activated B while C
+        is active, then C would be popped, and B would be shown,
+        again with a back button to navigate to A but with no way of
+        navigating to C because the configured order is maintained.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:ComponentWithChildren" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="text" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that displays text.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="workflow" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that hosts workflow forms. When a workflow item config is
+        specified, the workflow will be run when the component is activated. Any
+        command to run a workflow can use the component by adding
+        '#{componentId}' to its target. If the component is activated outside
+        the context of running a workflow, and does not have a workflow item
+        config, it will appear empty. Only one workflow can use the component at
+        a time. If a second workflow attempts to use the component, the user
+        will be asked to cancel one of the workflows in Mobile. In Web, the
+        first workflow is canceled automatically.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="user" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Shows information about the current user (if there is one), and
+        allows the user to sign in or out as appropriate.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <!-- GIS Components -->
+
+  <element name="layer-list" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Allows users to see the structure of layers on the map and
+        change their visibility. Requires an associated map or scene
+        component (see the "models" attribute).
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="map" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A 2D map and or a 3D scene in Web. A map can host child components and
+        has the following slots: "top-left", "top-right", "bottom-left",
+        "bottom-right". "top-center-visible" and "bottom-center-visible" are
+        special slots only implemented in Mobile. A child component in a
+        "center-visible" slot will be centered in the visible area of the map,
+        factoring in other components that are overlapping the map.
+        "context-menu" is a special slot only implemented in Web.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent mixed="true">
+        <extension base="tns:ComponentWithChildren" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="zoom" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Displays a pair of buttons that allow the user to zoom the map in or out.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="compass" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Displays a North-pointing compass that rotates with the rotation of the map to which it is associated.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="geolocate" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Displays a clickable/tappable indicator that toggles GPS geolocation behavior.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="search" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that allows the user to search one ore more sources
+        (maps, scenes, tables, geocoders, etc.).
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="results-list" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that allows the user to view results from a search,
+        identify, query, or any other activity that produces features.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="feature-details" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that allows the user to view feature details.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component" />
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="dialog" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        Displays a single child component in a dialog. Initially hidden. Displayed when
+        the dialog component is activated.
+      </documentation>
+    </annotation>
+    <complexType>
+      <complexContent>
+        <extension base="tns:Component">
+          <choice>
+            <element ref="tns:component" minOccurs="1" maxOccurs="1"/>
+          </choice>
+          <attribute name="is-modal" type="boolean">
+            <annotation>
+              <documentation xml:lang="en">
+                Whether or not the dialog is modal. If the dialog is modal, then you cannot interact with anything outside of the dialog.
+              </documentation>
+            </annotation>
+          </attribute>
+          <attribute name="has-close-button" type="boolean">
+            <annotation>
+              <documentation xml:lang="en">
+                Whether or not the dialog shows a close button.
+              </documentation>
+            </annotation>
+          </attribute>
+        </extension>
+      </complexContent>
+    </complexType>
+  </element>
+
+  <element name="print-form" substitutionGroup="tns:component">
+    <annotation>
+      <documentation xml:lang="en">
+        A component that presents configurable options for printing a map.
+      </documentation>
+    </annotation>
+  </element>
+</schema>
